@@ -68,6 +68,7 @@ class Transaction:
         TransactionState.VALIDATING: frozenset({
             TransactionState.ACCEPTED,
             TransactionState.REJECTED,
+            TransactionState.MANUAL_REVIEW,
         }),
         TransactionState.ACCEPTED: frozenset({TransactionState.SUBMITTED_TO_CBS}),
         TransactionState.SUBMITTED_TO_CBS: frozenset({
