@@ -10,6 +10,9 @@ class Settings:
 
     environment: str = "development"
     log_level: str = "INFO"
+    database_url: str | None = None
+    db_pool_size: int = 5
+    db_max_overflow: int = 10
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -17,4 +20,21 @@ class Settings:
         return cls(
             environment=os.getenv("SENTINEL_ENVIRONMENT", "development"),
             log_level=os.getenv("SENTINEL_LOG_LEVEL", "INFO").upper(),
+            database_url=os.getenv("SENTINEL_DATABASE_URL"),
+            db_pool_size=_positive_int_from_environment("SENTINEL_DB_POOL_SIZE", 5),
+            db_max_overflow=_nonnegative_int_from_environment("SENTINEL_DB_MAX_OVERFLOW", 10),
         )
+
+
+def _positive_int_from_environment(name: str, default: int) -> int:
+    value = int(os.getenv(name, str(default)))
+    if value < 1:
+        raise ValueError(f"{name} must be positive")
+    return value
+
+
+def _nonnegative_int_from_environment(name: str, default: int) -> int:
+    value = int(os.getenv(name, str(default)))
+    if value < 0:
+        raise ValueError(f"{name} must not be negative")
+    return value

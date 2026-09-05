@@ -15,6 +15,7 @@ from sentinel.domain.protection import (
     ProtectiveAction,
     ProtectiveDecision,
     ProtectiveResponseEngine,
+    RecoveryContext,
 )
 from sentinel.domain.risk import RiskAssessment, RiskEngine, RiskSignal
 from sentinel.domain.transactions import Transaction, TransactionState
@@ -158,9 +159,7 @@ class TransactionOrchestrator:
         return WorkflowResult(transaction, integrity, risk, protective)
 
 
-def _recovery_context(cbs: CBSAdapter):
-    from sentinel.domain.protection import RecoveryContext
-
+def _recovery_context(cbs: CBSAdapter) -> RecoveryContext:
     return RecoveryContext(
         reversal_supported=cbs.capabilities.reversal,
         retry_safe=False,
