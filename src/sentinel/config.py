@@ -13,6 +13,8 @@ class Settings:
     database_url: str | None = None
     db_pool_size: int = 5
     db_max_overflow: int = 10
+    redis_url: str | None = None
+    redis_max_connections: int = 20
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -23,6 +25,10 @@ class Settings:
             database_url=os.getenv("SENTINEL_DATABASE_URL"),
             db_pool_size=_positive_int_from_environment("SENTINEL_DB_POOL_SIZE", 5),
             db_max_overflow=_nonnegative_int_from_environment("SENTINEL_DB_MAX_OVERFLOW", 10),
+            redis_url=os.getenv("SENTINEL_REDIS_URL"),
+            redis_max_connections=_positive_int_from_environment(
+                "SENTINEL_REDIS_MAX_CONNECTIONS", 20
+            ),
         )
 
 

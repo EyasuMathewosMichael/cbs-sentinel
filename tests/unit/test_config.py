@@ -37,3 +37,13 @@ def test_settings_load_database_configuration(monkeypatch):
     assert settings.database_url.endswith("/sentinel")
     assert settings.db_pool_size == 8
     assert settings.db_max_overflow == 2
+
+
+def test_settings_load_redis_configuration(monkeypatch):
+    monkeypatch.setenv("SENTINEL_REDIS_URL", "rediss://cache.example.test:6380/0")
+    monkeypatch.setenv("SENTINEL_REDIS_MAX_CONNECTIONS", "12")
+
+    settings = Settings.from_environment()
+
+    assert settings.redis_url == "rediss://cache.example.test:6380/0"
+    assert settings.redis_max_connections == 12
