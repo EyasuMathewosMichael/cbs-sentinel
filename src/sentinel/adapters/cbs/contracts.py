@@ -45,6 +45,7 @@ class CBSAdapterCapabilities:
     balance_query: bool = True
     account_status_query: bool = True
     reversal: bool = False
+    compensation: bool = False
     reconciliation: bool = False
 
 
