@@ -9,6 +9,7 @@ from sentinel.application.api.app import APIError, DefaultPrincipal
 from sentinel.domain.integrity import IntegrityDecision, IntegrityDecisionCode
 from sentinel.domain.protection import ProtectiveAction, ProtectiveDecision
 from sentinel.domain.transactions import Transaction
+from sentinel.security import EnterpriseSecurityPolicy, SecurityControlError
 
 
 class FakeOrchestrator:
@@ -64,6 +65,12 @@ class LimitedRedis:
         from sentinel.infrastructure.coordination.redis import RedisRateLimitResult
 
         return RedisRateLimitResult(False, limit + 1, limit, 30)
+
+
+class CertificateVerifier:
+    async def verify(self, peer_certificate):
+        del peer_certificate
+        raise AssertionError("certificate verification should not run without a peer certificate")
 
 
 class ApiTestClient:
@@ -158,6 +165,49 @@ def test_authentication_authorization_and_required_idempotency():
         headers={"Authorization": "Bearer valid", "Idempotency-Key": "idem"},
     )
     assert response.status_code == 403
+
+
+def test_default_authentication_does_not_accept_bearer_tokens():
+    client = ApiTestClient(create_api(FakeOrchestrator()))
+    response = client.post(
+        "/api/v1/transactions",
+        json=body(),
+        headers={"Authorization": "Bearer arbitrary", "Idempotency-Key": "default-auth"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "AUTHENTICATION_REQUIRED"
+
+
+def test_production_api_requires_external_iam_and_mtls():
+    policy = EnterpriseSecurityPolicy(environment="production")
+    with pytest.raises(SecurityControlError):
+        create_api(FakeOrchestrator(), security_policy=policy)
+
+    with pytest.raises(SecurityControlError):
+        create_api(
+            FakeOrchestrator(),
+            authentication=Auth(),
+            security_policy=policy,
+        )
+
+
+def test_configured_mtls_rejects_requests_without_verified_peer_certificate():
+    client = ApiTestClient(
+        create_api(
+            FakeOrchestrator(),
+            authentication=Auth(),
+            mtls_verifier=CertificateVerifier(),
+        )
+    )
+    response = client.post(
+        "/api/v1/transactions",
+        json=body(),
+        headers={"Authorization": "Bearer valid", "Idempotency-Key": "missing-mtls"},
+    )
+
+    assert response.status_code == 401
+    assert response.json()["code"] == "MTLS_REQUIRED"
 
 
 def test_validation_and_timeout_errors_are_standardized():

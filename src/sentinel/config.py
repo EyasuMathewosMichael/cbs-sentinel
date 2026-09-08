@@ -1,7 +1,7 @@
 """Environment-backed application configuration."""
 
 import os
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 
 @dataclass(frozen=True, slots=True)
@@ -10,11 +10,17 @@ class Settings:
 
     environment: str = "development"
     log_level: str = "INFO"
-    database_url: str | None = None
+    database_url: str | None = field(default=None, repr=False)
     db_pool_size: int = 5
     db_max_overflow: int = 10
-    redis_url: str | None = None
+    redis_url: str | None = field(default=None, repr=False)
     redis_max_connections: int = 20
+    mtls_required: bool = True
+    min_tls_version: str = "TLSv1.3"
+    secrets_backend: str = "external"
+    kms_provider: str = "external-kms"
+    hsm_required: bool = True
+    iam_backend: str = "external-iam"
 
     @classmethod
     def from_environment(cls) -> "Settings":
@@ -29,7 +35,26 @@ class Settings:
             redis_max_connections=_positive_int_from_environment(
                 "SENTINEL_REDIS_MAX_CONNECTIONS", 20
             ),
+            mtls_required=_boolean_from_environment("SENTINEL_MTLS_REQUIRED", True),
+            min_tls_version=os.getenv("SENTINEL_MIN_TLS_VERSION", "TLSv1.3"),
+            secrets_backend=os.getenv("SENTINEL_SECRETS_BACKEND", "external"),
+            kms_provider=os.getenv("SENTINEL_KMS_PROVIDER", "external-kms"),
+            hsm_required=_boolean_from_environment("SENTINEL_HSM_REQUIRED", True),
+            iam_backend=os.getenv("SENTINEL_IAM_BACKEND", "external-iam"),
         )
+
+    def validate_security(self) -> None:
+        from sentinel.security import EnterpriseSecurityPolicy
+
+        EnterpriseSecurityPolicy(
+            environment=self.environment,
+            mtls_required=self.mtls_required,
+            min_tls_version=self.min_tls_version,
+            secrets_backend=self.secrets_backend,
+            kms_provider=self.kms_provider,
+            hsm_required=self.hsm_required,
+            iam_backend=self.iam_backend,
+        ).validate()
 
 
 def _positive_int_from_environment(name: str, default: int) -> int:
@@ -44,3 +69,10 @@ def _nonnegative_int_from_environment(name: str, default: int) -> int:
     if value < 0:
         raise ValueError(f"{name} must not be negative")
     return value
+
+
+def _boolean_from_environment(name: str, default: bool) -> bool:
+    value = os.getenv(name, str(default)).strip().lower()
+    if value not in {"true", "false"}:
+        raise ValueError(f"{name} must be true or false")
+    return value == "true"

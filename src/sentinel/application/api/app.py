@@ -16,6 +16,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from sentinel.application.orchestration.workflow import TransactionOrchestrator, WorkflowResult
 from sentinel.domain.integrity import TransactionRequest
 from sentinel.infrastructure.coordination import RedisCoordinator
+from sentinel.security import (
+    CertificatePolicy,
+    EnterpriseSecurityPolicy,
+    MTLSVerifier,
+    SecurityControlError,
+    ServiceIdentity,
+)
 
 
 class APIPrincipal(Protocol):
@@ -37,6 +44,13 @@ class DefaultPrincipal:
     roles: frozenset[str]
 
 
+@dataclass(frozen=True, slots=True)
+class VerifiedPrincipal:
+    subject: str
+    roles: frozenset[str]
+    service_identity: ServiceIdentity
+
+
 class AllowAllAuthentication:
     async def authenticate(self, authorization: str | None) -> DefaultPrincipal:
         if not authorization or not authorization.startswith("Bearer "):
@@ -45,6 +59,16 @@ class AllowAllAuthentication:
         if not token:
             raise APIError("AUTHENTICATION_REQUIRED", "Bearer token is empty", 401)
         return DefaultPrincipal(token, frozenset({"transaction:write", "transaction:read"}))
+
+
+class DenyByDefaultAuthentication:
+    async def authenticate(self, authorization: str | None) -> APIPrincipal:
+        del authorization
+        raise APIError(
+            "AUTHENTICATION_REQUIRED",
+            "an external IAM authentication hook is required",
+            401,
+        )
 
 
 class RoleAuthorization:
@@ -136,12 +160,22 @@ def create_api(
     authorization: AuthorizationHook | None = None,
     idempotency: IdempotencyStore | None = None,
     redis: RedisCoordinator | None = None,
+    mtls_verifier: MTLSVerifier | None = None,
+    certificate_policy: CertificatePolicy | None = None,
+    security_policy: EnterpriseSecurityPolicy | None = None,
     request_timeout_seconds: float = 10,
 ) -> FastAPI:
     """Create the API boundary; all financial decisions remain in the orchestrator/CBS."""
     if request_timeout_seconds <= 0:
         raise ValueError("request_timeout_seconds must be positive")
-    auth = authentication or AllowAllAuthentication()
+    policy = security_policy or EnterpriseSecurityPolicy()
+    policy.validate()
+    if policy.environment == "production" and authentication is None:
+        raise SecurityControlError("production API requires an external IAM authentication hook")
+    if policy.environment == "production" and mtls_verifier is None:
+        raise SecurityControlError("production API requires an mTLS verifier")
+    certificate_controls = certificate_policy or CertificatePolicy()
+    auth = authentication or DenyByDefaultAuthentication()
     authorizer = authorization or RoleAuthorization()
     idempotency_store = idempotency or InMemoryIdempotencyStore()
     idempotency_lock = asyncio.Lock()
@@ -184,9 +218,31 @@ def create_api(
         )
 
     async def principal_dependency(
+        request: Request,
         authorization_header: str | None = Header(default=None, alias="Authorization"),
     ) -> APIPrincipal:
-        return cast(APIPrincipal, await auth.authenticate(authorization_header))
+        principal = await auth.authenticate(authorization_header)
+        if mtls_verifier is None:
+            return principal
+        peer_certificate = request.scope.get("sentinel.peer_certificate")
+        if not isinstance(peer_certificate, bytes):
+            raise APIError("MTLS_REQUIRED", "verified client certificate is required", 401)
+        try:
+            service_identity = await mtls_verifier.verify(peer_certificate)
+        except SecurityControlError as error:
+            raise APIError("MTLS_INVALID", "client certificate was rejected", 401) from error
+        if not service_identity.name or not service_identity.namespace:
+            raise APIError("MTLS_INVALID", "client service identity is incomplete", 401)
+        try:
+            certificate_controls.validate_identity(service_identity)
+        except SecurityControlError as error:
+            raise APIError(
+                "MTLS_INVALID", "client certificate identity was rejected", 401
+            ) from error
+        return cast(
+            APIPrincipal,
+            VerifiedPrincipal(principal.subject, principal.roles, service_identity),
+        )
 
     @app.get("/api/v1/health")
     async def health() -> dict[str, str]:

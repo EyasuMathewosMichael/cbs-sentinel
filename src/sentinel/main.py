@@ -9,6 +9,7 @@ from sentinel.logging_config import configure_logging
 def create_application() -> Settings:
     """Load configuration and initialize logging for the application process."""
     settings = Settings.from_environment()
+    settings.validate_security()
     configure_logging(settings.log_level)
     logging.getLogger(__name__).info("SENTINEL foundation initialized")
     return settings
