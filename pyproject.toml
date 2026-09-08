@@ -12,6 +12,7 @@ license = { text = "Proprietary" }
 authors = [{ name = "SENTINEL Project" }]
 dependencies = [
     "aiokafka>=0.12,<1",
+    "fastapi>=0.115,<1",
     "redis[hiredis]>=5.2,<6",
     "SQLAlchemy[asyncio]>=2.0,<3",
     "asyncpg>=0.30,<1",
@@ -23,6 +24,7 @@ sentinel = "sentinel.main:run"
 [project.optional-dependencies]
 dev = [
     "fakeredis[lua]>=2.26,<3",
+    "httpx>=0.28,<1",
     "mypy>=1.15,<2",
     "pytest>=8.3,<9",
     "pytest-cov>=6,<7",
