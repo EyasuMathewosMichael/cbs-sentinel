@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+  namespace: sentinel
+  labels:
+    app.kubernetes.io/name: sentinel
+    app.kubernetes.io/part-of: cbs
+    app.kubernetes.io/component: transaction-control-plane
+data:
+  SENTINEL_ENV: production
+  SENTINEL_LOG_LEVEL: info
+  SENTINEL_METRICS_ENABLED: "true"
+  SENTINEL_TLS_MIN_VERSION: TLSv1.3
+  SENTINEL_API_HOST: 0.0.0.0
+  SENTINEL_API_PORT: "8000"

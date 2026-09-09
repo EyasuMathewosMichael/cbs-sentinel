@@ -1,0 +1,41 @@
+replicaCount: 3
+
+image:
+  repository: sentinel
+  tag: latest
+  pullPolicy: IfNotPresent
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: http
+
+resources:
+  requests:
+    cpu: 250m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+health:
+  readinessPath: /health/ready
+  livenessPath: /health/live
+  startupPath: /health/startup
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 8
+  targetCPUUtilizationPercentage: 70
+
+podDisruption:
+  minAvailable: 2
+
+networkPolicy:
+  enabled: true
+
+security:
+  runAsNonRoot: true
+  runAsUser: 10001
+  fsGroup: 20001
