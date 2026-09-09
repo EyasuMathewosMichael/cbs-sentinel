@@ -6,6 +6,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import (
+    JSON,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -94,3 +95,31 @@ class IdempotencyRecord(Base):
         DateTime(timezone=True), default=lambda: datetime.now(UTC), nullable=False
     )
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+
+class AuditRecord(Base):
+    """Immutable tamper-evident transaction and administrative audit event."""
+
+    __tablename__ = "sentinel_audit_records"
+    __table_args__ = (
+        Index("ix_sentinel_audit_transaction_occurred", "transaction_id", "occurred_at"),
+        Index("ix_sentinel_audit_event_type_occurred", "event_type", "occurred_at"),
+    )
+
+    event_id: Mapped[str] = mapped_column(String(128), primary_key=True)
+    event_type: Mapped[str] = mapped_column(String(128), nullable=False)
+    occurred_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    actor: Mapped[str] = mapped_column(String(256), nullable=False)
+    why: Mapped[str] = mapped_column(String(512), nullable=False)
+    action: Mapped[str] = mapped_column(String(128), nullable=False)
+    what: Mapped[str] = mapped_column(String(128), nullable=False)
+    transaction_id: Mapped[str | None] = mapped_column(String(128))
+    correlation_id: Mapped[str | None] = mapped_column(String(128))
+    policy: Mapped[str | None] = mapped_column(String(128))
+    rule: Mapped[str | None] = mapped_column(String(128))
+    model: Mapped[str | None] = mapped_column(String(128))
+    payload: Mapped[dict[str, object]] = mapped_column(JSON, nullable=False)
+    previous_hash: Mapped[str | None] = mapped_column(String(128))
+    event_hash: Mapped[str] = mapped_column(String(128), nullable=False, unique=True)

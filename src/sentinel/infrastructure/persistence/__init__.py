@@ -1,5 +1,6 @@
 """PostgreSQL persistence components."""
 
+from sentinel.infrastructure.persistence.audit import AuditRecordRepository
 from sentinel.infrastructure.persistence.database import (
     create_database,
     run_migration,
@@ -20,4 +21,5 @@ __all__ = [
     "create_database",
     "run_migration",
     "session_scope",
+    "AuditRecordRepository",
 ]
