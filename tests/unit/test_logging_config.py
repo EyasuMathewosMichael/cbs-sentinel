@@ -2,7 +2,13 @@ import logging
 
 from sentinel.logging_config import configure_logging
 from sentinel.observability import ObservabilityRegistry
-from sentinel.performance import BenchmarkRegistry, BenchmarkReport, PercentileSet
+from sentinel.performance import BenchmarkRegistry, PercentileSet
+from sentinel.fault_injection import (
+    FaultType,
+    FaultInjectionHarness,
+    FaultInjectionScenario,
+    ResilienceResult,
+)
 
 
 def test_configure_logging_accepts_case_insensitive_level():
@@ -62,3 +68,45 @@ def test_phase_16_benchmark_registry_records_latency_percentiles_and_duplicate_c
     assert report.cbs_latency_ms == 12
     assert report.concurrent_transactions == 8
     assert report.duplicate_requests == 2
+
+
+def test_phase_17_fault_injection_harness_accepts_all_requested_resilience_cases():
+    harness = FaultInjectionHarness()
+
+    scenarios = (
+        FaultType.CBS_FAILURE,
+        FaultType.CBS_TIMEOUT,
+        FaultType.POSTGRES_FAILURE,
+        FaultType.REDIS_FAILURE,
+        FaultType.KAFKA_FAILURE,
+        FaultType.NETWORK_FAILURE,
+        FaultType.PROCESS_CRASH,
+        FaultType.DUPLICATE_EVENTS,
+        FaultType.OUT_OF_ORDER_EVENTS,
+        FaultType.SLOW_DEPENDENCIES,
+        FaultType.CERTIFICATE_FAILURE,
+    )
+
+    for scenario in scenarios:
+        record = harness.simulate(scenario)
+        assert isinstance(record, FaultInjectionScenario)
+        assert record.fault == scenario
+        assert record.resilience == ResilienceResult.STABLE
+        assert record.duplicate_financial_effect is False
+        assert record.safe_timeout is True
+        assert record.safe_recovery is True
+        assert record.unknown_handling is True
+        assert record.circuit_breaker is True
+        assert record.state_preserved is True
+
+    summary = harness.summary()
+    review = harness.safe_review()
+
+    assert len(summary) == len(scenarios)
+    assert sorted(summary) == sorted(s.value for s in scenarios)
+    assert review["duplicate_financial_effect"] is True
+    assert review["safe_timeout"] is True
+    assert review["safe_recovery"] is True
+    assert review["unknown_handling"] is True
+    assert review["circuit_breaker"] is True
+    assert review["state_preserved"] is True
