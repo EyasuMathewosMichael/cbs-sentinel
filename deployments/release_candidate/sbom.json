@@ -1,0 +1,39 @@
+{
+  "format": "CycloneDX",
+  "name": "sentinel",
+  "version": "v1.0.0-rc1",
+  "components": [
+    {
+      "type": "library",
+      "name": "fastapi",
+      "version": "0.115.x"
+    },
+    {
+      "type": "library",
+      "name": "sqlalchemy",
+      "version": "2.0.x"
+    },
+    {
+      "type": "library",
+      "name": "redis",
+      "version": "5.2.x"
+    },
+    {
+      "type": "library",
+      "name": "aiokafka",
+      "version": "0.12.x"
+    },
+    {
+      "type": "library",
+      "name": "asyncpg",
+      "version": "0.30.x"
+    }
+  ],
+  "metadata": {
+    "release_candidate": "v1.0.0-rc1",
+    "security_validation_complete": true,
+    "working_tree_clean": true,
+    "reproducible_artifacts": true,
+    "documentation_complete": true
+  }
+}
