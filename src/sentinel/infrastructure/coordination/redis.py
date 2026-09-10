@@ -135,7 +135,12 @@ class RedisCoordinator:
         limit: int,
         window_seconds: int,
     ) -> RedisRateLimitResult:
-        """Apply an atomic fixed-window limit for operational traffic."""
+        """Apply an atomic fixed-window limit for operational traffic.
+
+        Redis failure is intentionally fail-closed here because allowing a
+        request when the advisory control cannot be evaluated would violate
+        the enterprise fail-closed posture and create an undisclosed bypass.
+        """
         _validate_key(key)
         if limit < 1:
             raise ValueError("limit must be positive")
@@ -148,7 +153,7 @@ class RedisCoordinator:
                 str(window_seconds),
             )
         except (RedisError, TimeoutError):
-            return RedisRateLimitResult(True, 0, limit, 0)
+            return RedisRateLimitResult(False, 0, limit, 0)
         count = int(count)
         ttl = max(int(ttl), 0)
         return RedisRateLimitResult(count <= limit, count, limit, ttl)

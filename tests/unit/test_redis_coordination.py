@@ -138,7 +138,7 @@ def test_invalid_redis_configuration_and_keys_are_rejected():
     asyncio.run(exercise())
 
 
-def test_advisory_operations_fail_open_when_redis_is_unavailable():
+def test_advisory_operations_fail_closed_when_redis_is_unavailable():
     coordinator = RedisCoordinator(FailedRedis())
 
     async def exercise():
@@ -148,7 +148,8 @@ def test_advisory_operations_fail_open_when_redis_is_unavailable():
         assert await coordinator.idempotency_hint_get("idem") is None
         assert not await coordinator.idempotency_hint_set("idem", "txn", ttl_seconds=1)
         result = await coordinator.rate_limit("api", limit=1, window_seconds=1)
-        assert result.allowed
+        assert not result.allowed
         assert result.count == 0
+        assert result.retry_after_seconds == 0
 
     asyncio.run(exercise())
