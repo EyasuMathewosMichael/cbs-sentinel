@@ -62,6 +62,22 @@ def test_simulator_timeout_scenario_returns_timeout_error():
     assert payload["reconciliation"] == "pending"
 
 
+def test_debit_without_credit_requires_reconciliation():
+    client = ApiTestClient(create_api(_real_orchestrator(), authentication=Auth()))
+    response = client.post(
+        "/api/v1/simulator/transactions",
+        json={**body(), "transaction_id": "sim-debit-without-credit", "scenario": "debit_without_credit"},
+        headers={
+            "Authorization": "Bearer valid",
+            "Idempotency-Key": "sim-debit-without-credit-idem",
+        },
+    )
+
+    assert response.status_code == 200
+    assert response.json()["state"] == "CBS_PROCESSING"
+    assert response.json()["reconciliation"] == "pending"
+
+
 class FakeOrchestrator:
     async def process(self, request):
         from datetime import UTC, datetime

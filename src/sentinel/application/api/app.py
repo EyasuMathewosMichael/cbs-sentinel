@@ -360,6 +360,20 @@ def create_api(
             scenario_result = await asyncio.wait_for(process, timeout=request_timeout_seconds)
         except TimeoutError as error:
             raise APIError("CBS_TIMEOUT", "simulation processing timed out", 504) from error
+        reconciliation_scenarios = {
+            "debit_without_credit",
+            "delayed_posting",
+            "duplicate_posting",
+            "incorrect_balance_response",
+            "partial_failure",
+            "reconciliation",
+            "unknown",
+        }
+        reconciliation_pending = (
+            scenario_name in reconciliation_scenarios
+            or scenario_result.transaction.state.value
+            in {"UNKNOWN", "RECONCILIATION_PENDING", "MANUAL_REVIEW"}
+        )
         payload = {
             "transaction_id": scenario_result.transaction.transaction_id,
             "state": scenario_result.transaction.state.value,
@@ -371,7 +385,7 @@ def create_api(
             "warning": "SIMULATION MODE ONLY — no real bank ledger",
             "scenario": scenario_name,
             "cbs_status": "simulator",
-            "reconciliation": "pending" if scenario_result.transaction.state.value in {"UNKNOWN", "RECONCILIATION_PENDING", "MANUAL_REVIEW"} else "not-required",
+            "reconciliation": "pending" if reconciliation_pending else "not-required",
             "idempotency_key": idempotency_key,
             "event_count": len(scenario_result.transaction.history),
         }
