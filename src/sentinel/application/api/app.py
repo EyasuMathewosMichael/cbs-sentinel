@@ -11,7 +11,7 @@ from uuid import uuid4
 
 from fastapi import Depends, FastAPI, Header, Request, Response, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import HTMLResponse, JSONResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel.adapters.cbs import SimulatorCBSAdapter
@@ -267,6 +267,13 @@ def create_api(
     @app.get("/api/v1/health")
     async def health() -> dict[str, str]:
         return {"status": "healthy", "version": "v1"}
+
+    @app.get("/", include_in_schema=False)
+    async def simulation_home() -> RedirectResponse:
+        return RedirectResponse(
+            url="/simulation-ui",
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+        )
 
     @app.get("/api/v1/ready")
     async def ready() -> dict[str, str]:
