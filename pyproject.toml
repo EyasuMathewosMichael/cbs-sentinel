@@ -13,6 +13,7 @@ authors = [{ name = "SENTINEL Project" }]
 dependencies = [
     "aiokafka>=0.12,<1",
     "fastapi>=0.115,<1",
+    "uvicorn[standard]>=0.34,<1",
     "redis[hiredis]>=5.2,<6",
     "SQLAlchemy[asyncio]>=2.0,<3",
     "asyncpg>=0.30,<1",
