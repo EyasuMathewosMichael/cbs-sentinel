@@ -336,20 +336,23 @@ def create_api(
             raise APIError("INVALID_REQUEST", "unsupported simulation scenario", 400)
 
         simulation_client = SimulatorCBSAdapter(scenario=scenario_name)
-        scenario_result = await asyncio.wait_for(
-            orchestrator.process(
-                TransactionRequest(
-                    body.transaction_id,
-                    idempotency_key,
-                    body.source_account,
-                    body.destination_account,
-                    __import__("decimal").Decimal(body.amount),
-                    body.currency,
-                    body.transaction_type,
-                )
-            ),
-            timeout=request_timeout_seconds,
+        transaction_request = TransactionRequest(
+            body.transaction_id,
+            idempotency_key,
+            body.source_account,
+            body.destination_account,
+            __import__("decimal").Decimal(body.amount),
+            body.currency,
+            body.transaction_type,
         )
+        try:
+            if isinstance(orchestrator, TransactionOrchestrator):
+                process = orchestrator.process(transaction_request, cbs=simulation_client)
+            else:
+                process = orchestrator.process(transaction_request)
+            scenario_result = await asyncio.wait_for(process, timeout=request_timeout_seconds)
+        except TimeoutError as error:
+            raise APIError("CBS_TIMEOUT", "simulation processing timed out", 504) from error
         payload = {
             "transaction_id": scenario_result.transaction.transaction_id,
             "state": scenario_result.transaction.state.value,

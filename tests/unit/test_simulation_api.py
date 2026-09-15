@@ -43,6 +43,25 @@ def test_simulator_transaction_submission_uses_scenario_and_returns_provenance()
     assert payload["trace_id"] == "sim-trace-1"
 
 
+def test_simulator_timeout_scenario_returns_timeout_error():
+    client = ApiTestClient(create_api(_real_orchestrator(), authentication=Auth()))
+    headers = {
+        "Authorization": "Bearer valid",
+        "Idempotency-Key": "sim-timeout-1",
+    }
+
+    response = client.post(
+        "/api/v1/simulator/transactions",
+        json={**body(), "scenario": "timeout"},
+        headers=headers,
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["state"] == "UNKNOWN"
+    assert payload["reconciliation"] == "pending"
+
+
 class FakeOrchestrator:
     async def process(self, request):
         from datetime import UTC, datetime
@@ -67,3 +86,32 @@ class FakeOrchestrator:
                 ),
             },
         )()
+
+
+def _real_orchestrator():
+    from sentinel.adapters.cbs import SimulatorCBSAdapter
+    from sentinel.application.orchestration.workflow import TransactionOrchestrator
+    from sentinel.domain.integrity import IntegrityEngine
+    from sentinel.domain.protection import ProtectiveAction, ProtectiveResponseEngine
+    from sentinel.domain.risk import RiskEngine
+
+    class Policy:
+        async def decide(self, request, risk):
+            return ProtectiveAction.ALLOW
+
+    class Hooks:
+        async def publish(self, event_type, transaction):
+            return None
+
+        async def request_reconciliation(self, transaction):
+            return None
+
+    return TransactionOrchestrator(
+        cbs=SimulatorCBSAdapter(),
+        integrity=IntegrityEngine(),
+        risk=RiskEngine(),
+        protection=ProtectiveResponseEngine(),
+        policy=Policy(),
+        reconciliation=Hooks(),
+        events=Hooks(),
+    )

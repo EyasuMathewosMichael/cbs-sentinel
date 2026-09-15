@@ -82,8 +82,10 @@ class TransactionOrchestrator:
         *,
         risk_signal: RiskSignal | None = None,
         processing: ProcessingObservation | None = None,
+        cbs: CBSAdapter | None = None,
     ) -> WorkflowResult:
         """Run one transaction through validation, decisioning, CBS, and hooks."""
+        active_cbs = cbs or self._cbs
         transaction = Transaction(request.transaction_id)
         await self._events.publish("transaction.received", transaction)
         transaction.transition(TransactionState.VALIDATING, actor="orchestrator")
@@ -115,7 +117,7 @@ class TransactionOrchestrator:
             integrity_decision=integrity,
             risk_assessment=risk,
             policy_action=policy_action,
-            recovery=_recovery_context(self._cbs),
+            recovery=_recovery_context(active_cbs),
         )
         if protective.action in {
             ProtectiveAction.REJECT,
@@ -131,7 +133,7 @@ class TransactionOrchestrator:
         transaction.transition(TransactionState.SUBMITTED_TO_CBS, actor="orchestrator")
         await self._events.publish("transaction.submitted", transaction)
         try:
-            submission = await self._cbs.submit_transaction(
+            submission = await active_cbs.submit_transaction(
                 request,
                 idempotency_key=request.idempotency_key,
             )
