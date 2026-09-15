@@ -15,6 +15,7 @@ from sentinel.adapters.cbs.contracts import (
     TransactionStatus,
     TransactionSubmission,
 )
+from sentinel.adapters.cbs.placeholder import PlaceholderCBSAdapter
 from sentinel.adapters.cbs.port import CBSAdapter
 from sentinel.adapters.cbs.runtime import execute_cbs_call
 from sentinel.adapters.cbs.simulator import SimulatorCBSAdapter
@@ -29,6 +30,7 @@ __all__ = [
     "CBSOperationError",
     "CBSOperationTimeout",
     "CBSUnavailableError",
+    "PlaceholderCBSAdapter",
     "ReconciliationResult",
     "ReversalResult",
     "SimulatorCBSAdapter",

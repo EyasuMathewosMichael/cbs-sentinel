@@ -1,5 +1,6 @@
-from sentinel.application.api import create_api
 from tests.unit.test_enterprise_api import ApiTestClient, Auth, body
+
+from sentinel.application.api import create_api
 
 
 def test_simulator_health_and_scenario_catalog():
@@ -38,7 +39,13 @@ def test_simulator_transaction_submission_uses_scenario_and_returns_provenance()
     assert payload["scenario"] == "normal_transaction"
     assert payload["mode"] == "simulation"
     assert payload["transaction_id"] == "api-txn-1"
-    assert payload["state"] in {"RECEIVED", "VALIDATING", "ACCEPTED", "SUBMITTED_TO_CBS", "CBS_PROCESSING"}
+    assert payload["state"] in {
+        "RECEIVED",
+        "VALIDATING",
+        "ACCEPTED",
+        "SUBMITTED_TO_CBS",
+        "CBS_PROCESSING",
+    }
     assert payload["correlation_id"] == "sim-corr-1"
     assert payload["trace_id"] == "sim-trace-1"
 
@@ -66,7 +73,11 @@ def test_debit_without_credit_requires_reconciliation():
     client = ApiTestClient(create_api(_real_orchestrator(), authentication=Auth()))
     response = client.post(
         "/api/v1/simulator/transactions",
-        json={**body(), "transaction_id": "sim-debit-without-credit", "scenario": "debit_without_credit"},
+        json={
+            **body(),
+            "transaction_id": "sim-debit-without-credit",
+            "scenario": "debit_without_credit",
+        },
         headers={
             "Authorization": "Bearer valid",
             "Idempotency-Key": "sim-debit-without-credit-idem",

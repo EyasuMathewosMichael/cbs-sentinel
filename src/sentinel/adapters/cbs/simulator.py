@@ -88,10 +88,14 @@ class SimulatorCBSAdapter:
         if self._scenario == "unknown":
             reference = f"sim-{request.transaction_id}"
             submitted_at = utc_now()
-            stored = _StoredTransaction(request, reference, TransactionStatus.UNKNOWN, submitted_at)
+            stored = _StoredTransaction(
+                request, reference, TransactionStatus.UNKNOWN, submitted_at
+            )
             self._transactions[request.transaction_id] = stored
             self._idempotency[idempotency_key] = request.transaction_id
-            return TransactionSubmission(request.transaction_id, reference, stored.status, submitted_at)
+            return TransactionSubmission(
+                request.transaction_id, reference, stored.status, submitted_at
+            )
         if self._scenario == "duplicate_request" or self._scenario == "duplicate_posting":
             existing_id = self._idempotency.get(idempotency_key)
             if existing_id is not None:
@@ -105,10 +109,14 @@ class SimulatorCBSAdapter:
         if self._scenario == "partial_failure":
             reference = f"sim-{request.transaction_id}"
             submitted_at = utc_now()
-            stored = _StoredTransaction(request, reference, TransactionStatus.ACCEPTED, submitted_at)
+            stored = _StoredTransaction(
+                request, reference, TransactionStatus.ACCEPTED, submitted_at
+            )
             self._transactions[request.transaction_id] = stored
             self._idempotency[idempotency_key] = request.transaction_id
-            return TransactionSubmission(request.transaction_id, reference, stored.status, submitted_at)
+            return TransactionSubmission(
+                request.transaction_id, reference, stored.status, submitted_at
+            )
         if self._scenario == "debit_without_credit":
             return TransactionSubmission(
                 request.transaction_id,

@@ -1,8 +1,12 @@
+from decimal import Decimal
 from pathlib import Path
 
-from sentinel.domain.integrity import DuplicateRegistry, IntegrityDecisionCode, IntegrityEngine
-from sentinel.domain.integrity import TransactionRequest
-from decimal import Decimal
+from sentinel.domain.integrity import (
+    DuplicateRegistry,
+    IntegrityDecisionCode,
+    IntegrityEngine,
+    TransactionRequest,
+)
 
 
 def test_phase_18_kubernetes_deployment_artifacts_exist():

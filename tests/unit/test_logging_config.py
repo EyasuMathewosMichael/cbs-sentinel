@@ -1,14 +1,14 @@
 import logging
 
+from sentinel.fault_injection import (
+    FaultInjectionHarness,
+    FaultInjectionScenario,
+    FaultType,
+    ResilienceResult,
+)
 from sentinel.logging_config import configure_logging
 from sentinel.observability import ObservabilityRegistry
 from sentinel.performance import BenchmarkRegistry, PercentileSet
-from sentinel.fault_injection import (
-    FaultType,
-    FaultInjectionHarness,
-    FaultInjectionScenario,
-    ResilienceResult,
-)
 
 
 def test_configure_logging_accepts_case_insensitive_level():
@@ -40,7 +40,7 @@ def test_observability_registry_tracks_unknown_and_reconciliation_foundations():
     assert "RECONCILIATION_BACKLOG" in snapshot.alerts
 
 
-def test_phase_16_benchmark_registry_records_latency_percentiles_and_duplicate_concurrency_context():
+def test_phase_16_benchmark_registry_records_latency_and_concurrency_context():
     registry = BenchmarkRegistry()
     registry.record_rps(50)
     registry.record_latency_percentiles(PercentileSet(10, 25, 50, 90))

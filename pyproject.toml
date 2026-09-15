@@ -48,6 +48,9 @@ src = ["src", "tests"]
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP"]
 
+[tool.ruff.lint.per-file-ignores]
+"src/sentinel/application/api/app.py" = ["E501"]
+
 [tool.mypy]
 python_version = "3.12"
 strict = true

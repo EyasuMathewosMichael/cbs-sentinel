@@ -16,6 +16,7 @@ from pydantic import BaseModel, ConfigDict, Field
 
 from sentinel.adapters.cbs import SimulatorCBSAdapter
 from sentinel.application.orchestration.workflow import TransactionOrchestrator, WorkflowResult
+from sentinel.config import Settings
 from sentinel.domain.integrity import TransactionRequest
 from sentinel.infrastructure.coordination import RedisCoordinator
 from sentinel.security import (
@@ -28,8 +29,11 @@ from sentinel.security import (
 
 
 class APIPrincipal(Protocol):
-    subject: str
-    roles: frozenset[str]
+    @property
+    def subject(self) -> str: ...
+
+    @property
+    def roles(self) -> frozenset[str]: ...
 
 
 class AuthenticationHook(Protocol):
@@ -290,6 +294,36 @@ def create_api(
             "cbs_authority": "non-authoritative",
         }
 
+    @app.get("/api/v1/cbs/health")
+    async def cbs_health() -> dict[str, str]:
+        settings = Settings.from_environment()
+        provider = settings.cbs_provider.strip().lower() if settings.cbs_provider else "simulation"
+        environment = settings.environment.strip().lower() if settings.environment else "development"
+        if provider == "simulation":
+            status = "synthetic"
+            warning = "SIMULATION MODE ONLY — no real bank ledger"
+            adapter_type = "SimulatorCBSAdapter"
+            connectivity = "synthetic"
+        elif provider == "placeholder":
+            status = "synthetic"
+            warning = "PLACEHOLDER CBS ONLY — not an authoritative bank ledger"
+            adapter_type = "PlaceholderCBSAdapter"
+            connectivity = "synthetic"
+        else:
+            status = "not-configured"
+            warning = "Real bank connectivity requires an explicitly implemented and approved adapter"
+            adapter_type = "unregistered"
+            connectivity = "blocked"
+        return {
+            "status": status,
+            "provider": provider,
+            "warning": warning,
+            "environment": environment,
+            "adapter_type": adapter_type,
+            "connectivity": connectivity,
+            "endpoint_configured": "true" if settings.cbs_endpoint else "false",
+        }
+
     @app.get("/api/v1/simulator/scenarios")
     async def simulator_scenarios() -> dict[str, list[dict[str, str]]]:
         scenarios = []
@@ -374,11 +408,13 @@ def create_api(
             or scenario_result.transaction.state.value
             in {"UNKNOWN", "RECONCILIATION_PENDING", "MANUAL_REVIEW"}
         )
-        payload = {
+        correlation_header = correlation_id or str(uuid4())
+        trace_header = trace_id or str(uuid4())
+        payload: dict[str, object] = {
             "transaction_id": scenario_result.transaction.transaction_id,
             "state": scenario_result.transaction.state.value,
-            "correlation_id": correlation_id or str(uuid4()),
-            "trace_id": trace_id or str(uuid4()),
+            "correlation_id": correlation_header,
+            "trace_id": trace_header,
             "integrity_code": scenario_result.integrity.code.value,
             "protective_action": scenario_result.protective.action.value,
             "mode": "simulation",
@@ -394,8 +430,8 @@ def create_api(
             {"timestamp": entry.timestamp.isoformat(), "previous": entry.previous_state.value if entry.previous_state else None, "new": entry.new_state.value, "actor": entry.actor}
             for entry in scenario_result.transaction.history
         ]
-        response.headers["X-Correlation-ID"] = payload["correlation_id"]
-        response.headers["X-Trace-ID"] = payload["trace_id"]
+        response.headers["X-Correlation-ID"] = correlation_header
+        response.headers["X-Trace-ID"] = trace_header
         return payload
 
     @app.post("/api/v1/simulator/scenarios/{scenario}/execute")
@@ -543,6 +579,114 @@ def create_api(
 
                 loadStatus();
                 loadScenarios();
+            </script>
+        </body>
+        </html>
+        """)
+
+    @app.get("/banking-ui", response_class=HTMLResponse)
+    async def banking_ui_page() -> HTMLResponse:
+        return HTMLResponse("""
+        <!doctype html>
+        <html>
+        <head>
+            <meta charset="utf-8" />
+            <meta name="viewport" content="width=device-width, initial-scale=1" />
+            <title>SENTINEL Banking Operations Console</title>
+            <style>
+                body { font-family: Inter, Segoe UI, sans-serif; margin: 0; background: #f3f4f6; color: #111827; }
+                .shell { max-width: 1400px; margin: 0 auto; padding: 24px; }
+                .topbar { background: linear-gradient(135deg, #0f172a, #1d4ed8); color: white; padding: 18px 24px; border-radius: 16px; display: flex; justify-content: space-between; }
+                .badge { background: rgba(255,255,255,0.14); border: 1px solid rgba(255,255,255,0.18); padding: 6px 10px; border-radius: 999px; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; }
+                .grid { display: grid; grid-template-columns: 280px 1fr; gap: 20px; margin-top: 20px; }
+                .nav { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
+                .nav a { display: block; padding: 10px 12px; border-radius: 10px; color: #1f2937; text-decoration: none; margin-bottom: 8px; }
+                .nav a:hover { background: #eff6ff; }
+                .main { display: grid; gap: 20px; }
+                .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
+                .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
+                .metric { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 16px; }
+                form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+                input, select, button { width: 100%; box-sizing: border-box; padding: 10px 12px; border-radius: 10px; border: 1px solid #cbd5e1; }
+                button { background: #2563eb; color: white; border: none; font-weight: 700; }
+                .notice { background: #fef3c7; border: 1px solid #fcd34d; color: #92400e; border-radius: 10px; padding: 12px 14px; }
+                .value { display: block; margin-top: 8px; font-size: 14px; }
+            </style>
+        </head>
+        <body>
+            <div class="shell">
+                <div class="topbar">
+                    <div>
+                        <div class="badge" id="provider-badge">PLACEHOLDER CBS</div>
+                        <h2 style="margin: 8px 0 0;">SENTINEL Banking Operations Console</h2>
+                    </div>
+                    <div class="badge" id="env-badge">DEVELOPMENT</div>
+                </div>
+                <div class="grid">
+                    <aside class="nav">
+                        <strong>Navigation</strong>
+                        <a href="#">Dashboard</a>
+                        <a href="#">Transactions</a>
+                        <a href="#">Reconciliation</a>
+                        <a href="#">CBS Integration</a>
+                        <a href="#">Risk & Integrity</a>
+                        <a href="#">Audit</a>
+                        <a href="#">System Health</a>
+                    </aside>
+                    <main class="main">
+                        <div class="notice">This console shows synthetic or unavailable values only. It does not claim live bank telemetry.</div>
+                        <section class="metrics">
+                            <div class="metric"><div>Environment</div><strong class="value" id="environment-value">Unavailable</strong></div>
+                            <div class="metric"><div>CBS Provider</div><strong class="value" id="provider-value">Unavailable</strong></div>
+                            <div class="metric"><div>Unknown Txns</div><strong class="value" id="unknown-value">Unavailable</strong></div>
+                            <div class="metric"><div>Reconciliation</div><strong class="value" id="reconciliation-value">Unavailable</strong></div>
+                        </section>
+                        <div class="card">
+                            <h3>Transaction Submission</h3>
+                            <form>
+                                <input value="acct-source-001" placeholder="Source account" />
+                                <input value="acct-dest-001" placeholder="Destination account" />
+                                <input value="1250.00" placeholder="Amount" />
+                                <select><option>ETB</option><option>USD</option></select>
+                                <input value="TRANSFER" placeholder="Transaction type" />
+                                <input value="idem-001" placeholder="Idempotency key" />
+                                <input value="corr-001" placeholder="Correlation ID" />
+                                <input value="trace-001" placeholder="Trace ID" />
+                                <button type="button">Submit transaction</button>
+                            </form>
+                        </div>
+                        <div class="card">
+                            <h3>CBS Integration Status</h3>
+                            <pre id="cbs-status">{"provider":"unavailable","status":"not-configured","environment":"unavailable"}</pre>
+                        </div>
+                    </main>
+                </div>
+            </div>
+            <script>
+                async function loadCbsStatus() {
+                    try {
+                        const res = await fetch('/api/v1/cbs/health');
+                        const data = await res.json();
+                        const provider = (data.provider || 'unavailable').toUpperCase();
+                        const environment = (data.environment || 'unavailable').toUpperCase();
+                        document.getElementById('provider-badge').textContent = provider;
+                        document.getElementById('env-badge').textContent = environment;
+                        document.getElementById('environment-value').textContent = environment;
+                        document.getElementById('provider-value').textContent = provider;
+                        document.getElementById('unknown-value').textContent = data.status === 'not-configured' ? 'Unavailable' : 'Synthetic';
+                        document.getElementById('reconciliation-value').textContent = data.status === 'not-configured' ? 'Unavailable' : 'Synthetic';
+                        document.getElementById('cbs-status').textContent = JSON.stringify(data, null, 2);
+                    } catch (error) {
+                        document.getElementById('provider-badge').textContent = 'UNAVAILABLE';
+                        document.getElementById('env-badge').textContent = 'UNAVAILABLE';
+                        document.getElementById('environment-value').textContent = 'Unavailable';
+                        document.getElementById('provider-value').textContent = 'Unavailable';
+                        document.getElementById('unknown-value').textContent = 'Unavailable';
+                        document.getElementById('reconciliation-value').textContent = 'Unavailable';
+                        document.getElementById('cbs-status').textContent = '{"provider":"unavailable","status":"not-configured","environment":"unavailable"}';
+                    }
+                }
+                loadCbsStatus();
             </script>
         </body>
         </html>

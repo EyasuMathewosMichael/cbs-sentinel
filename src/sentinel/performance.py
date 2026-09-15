@@ -81,7 +81,12 @@ class BenchmarkRegistry:
         self._rps = rps
 
     def record_latency_percentiles(self, percentiles: PercentileSet) -> None:
-        if percentiles.p50 < 0 or percentiles.p95 < 0 or percentiles.p99 < 0 or percentiles.p99_9 < 0:
+        if (
+            percentiles.p50 < 0
+            or percentiles.p95 < 0
+            or percentiles.p99 < 0
+            or percentiles.p99_9 < 0
+        ):
             raise ValueError("percentiles must be non-negative")
         self._percentiles = percentiles
 
@@ -151,25 +156,70 @@ class BenchmarkRegistry:
 
         if targets.rps is not None and report.rps < targets.rps:
             findings["RPS"] = f"below target: measured {report.rps} < {targets.rps}"
-        if targets.p50_latency_ms is not None and report.percentiles.p50 > targets.p50_latency_ms:
-            findings["P50"] = f"above target: measured {report.percentiles.p50} > {targets.p50_latency_ms}"
-        if targets.p95_latency_ms is not None and report.percentiles.p95 > targets.p95_latency_ms:
-            findings["P95"] = f"above target: measured {report.percentiles.p95} > {targets.p95_latency_ms}"
-        if targets.p99_latency_ms is not None and report.percentiles.p99 > targets.p99_latency_ms:
-            findings["P99"] = f"above target: measured {report.percentiles.p99} > {targets.p99_latency_ms}"
-        if targets.p99_9_latency_ms is not None and report.percentiles.p99_9 > targets.p99_9_latency_ms:
-            findings["P99_9"] = f"above target: measured {report.percentiles.p99_9} > {targets.p99_9_latency_ms}"
+        if (
+            targets.p50_latency_ms is not None
+            and report.percentiles.p50 > targets.p50_latency_ms
+        ):
+            findings["P50"] = (
+                f"above target: measured {report.percentiles.p50} > "
+                f"{targets.p50_latency_ms}"
+            )
+        if (
+            targets.p95_latency_ms is not None
+            and report.percentiles.p95 > targets.p95_latency_ms
+        ):
+            findings["P95"] = (
+                f"above target: measured {report.percentiles.p95} > "
+                f"{targets.p95_latency_ms}"
+            )
+        if (
+            targets.p99_latency_ms is not None
+            and report.percentiles.p99 > targets.p99_latency_ms
+        ):
+            findings["P99"] = (
+                f"above target: measured {report.percentiles.p99} > "
+                f"{targets.p99_latency_ms}"
+            )
+        if (
+            targets.p99_9_latency_ms is not None
+            and report.percentiles.p99_9 > targets.p99_9_latency_ms
+        ):
+            findings["P99_9"] = (
+                f"above target: measured {report.percentiles.p99_9} > "
+                f"{targets.p99_9_latency_ms}"
+            )
         if targets.cpu_percent is not None and report.cpu > targets.cpu_percent:
             findings["CPU"] = f"above target: measured {report.cpu} > {targets.cpu_percent}"
         if targets.memory_mb is not None and report.memory_mb > targets.memory_mb:
             findings["MEMORY"] = f"above target: measured {report.memory_mb} > {targets.memory_mb}"
-        if targets.database_latency_ms is not None and report.database_latency_ms > targets.database_latency_ms:
-            findings["DB_LATENCY"] = f"above target: measured {report.database_latency_ms} > {targets.database_latency_ms}"
-        if targets.redis_latency_ms is not None and report.redis_latency_ms > targets.redis_latency_ms:
-            findings["REDIS_LATENCY"] = f"above target: measured {report.redis_latency_ms} > {targets.redis_latency_ms}"
-        if targets.kafka_latency_ms is not None and report.kafka_latency_ms > targets.kafka_latency_ms:
-            findings["KAFKA_LATENCY"] = f"above target: measured {report.kafka_latency_ms} > {targets.kafka_latency_ms}"
+        if (
+            targets.database_latency_ms is not None
+            and report.database_latency_ms > targets.database_latency_ms
+        ):
+            findings["DB_LATENCY"] = (
+                f"above target: measured {report.database_latency_ms} > "
+                f"{targets.database_latency_ms}"
+            )
+        if (
+            targets.redis_latency_ms is not None
+            and report.redis_latency_ms > targets.redis_latency_ms
+        ):
+            findings["REDIS_LATENCY"] = (
+                f"above target: measured {report.redis_latency_ms} > "
+                f"{targets.redis_latency_ms}"
+            )
+        if (
+            targets.kafka_latency_ms is not None
+            and report.kafka_latency_ms > targets.kafka_latency_ms
+        ):
+            findings["KAFKA_LATENCY"] = (
+                f"above target: measured {report.kafka_latency_ms} > "
+                f"{targets.kafka_latency_ms}"
+            )
         if targets.cbs_latency_ms is not None and report.cbs_latency_ms > targets.cbs_latency_ms:
-            findings["CBS_LATENCY"] = f"above target: measured {report.cbs_latency_ms} > {targets.cbs_latency_ms}"
+            findings["CBS_LATENCY"] = (
+                f"above target: measured {report.cbs_latency_ms} > "
+                f"{targets.cbs_latency_ms}"
+            )
 
         return findings

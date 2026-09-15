@@ -4,8 +4,8 @@ from sentinel.domain.audit.records import (
     AuditChainError,
     AuditEvent,
     AuditEventType,
-    DecisionAuditRecorder,
     AuditRepository,
+    DecisionAuditRecorder,
     InMemoryAuditRepository,
     SecurityEventAuditSink,
 )

@@ -6,9 +6,11 @@ from dataclasses import dataclass, field
 
 @dataclass(frozen=True, slots=True)
 class Settings:
-    """Configuration required by the Phase 0 application foundation."""
+    """Application configuration with explicit CBS provider controls."""
 
     environment: str = "development"
+    cbs_provider: str = "simulation"
+    cbs_endpoint: str | None = field(default=None, repr=False)
     log_level: str = "INFO"
     database_url: str | None = field(default=None, repr=False)
     db_pool_size: int = 5
@@ -27,6 +29,8 @@ class Settings:
         """Build settings from environment variables with safe local defaults."""
         return cls(
             environment=os.getenv("SENTINEL_ENVIRONMENT", "development"),
+            cbs_provider=os.getenv("SENTINEL_CBS_PROVIDER", "simulation").lower(),
+            cbs_endpoint=os.getenv("SENTINEL_CBS_ENDPOINT"),
             log_level=os.getenv("SENTINEL_LOG_LEVEL", "INFO").upper(),
             database_url=os.getenv("SENTINEL_DATABASE_URL"),
             db_pool_size=_positive_int_from_environment("SENTINEL_DB_POOL_SIZE", 5),
@@ -55,6 +59,16 @@ class Settings:
             hsm_required=self.hsm_required,
             iam_backend=self.iam_backend,
         ).validate()
+        if self.cbs_provider not in {"simulation", "placeholder"}:
+            if self.cbs_endpoint:
+                raise ValueError(
+                    "real bank connectivity requires an explicitly implemented and approved adapter"
+                )
+        elif self.cbs_endpoint:
+            raise ValueError(
+                "endpoint configuration is rejected for simulation and placeholder providers; "
+                "real bank connectivity requires an explicit bank adapter"
+            )
 
 
 def _positive_int_from_environment(name: str, default: int) -> int:

@@ -1,11 +1,9 @@
 import asyncio
-from datetime import UTC, datetime
 from decimal import Decimal
 
 import pytest
 
 from sentinel.adapters.cbs import (
-    CBSOperationError,
     CBSOperationTimeout,
     CBSUnavailableError,
     ReversalResult,
@@ -103,7 +101,9 @@ def test_phase_20_simulator_partial_failure_and_reconciliation_scenarios_expose_
     )
 
     async def run_scenario():
-        submission = await adapter.submit_transaction(request, idempotency_key=request.idempotency_key)
+        submission = await adapter.submit_transaction(
+            request, idempotency_key=request.idempotency_key
+        )
         reconciliation = await adapter.reconcile_transaction(request.transaction_id)
         return submission, reconciliation
 

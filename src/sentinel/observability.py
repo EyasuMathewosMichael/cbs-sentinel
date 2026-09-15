@@ -22,7 +22,6 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from typing import Any
 
-
 logger = logging.getLogger("sentinel.observability")
 
 SENSITIVE_LOG_FIELDS = {
@@ -306,7 +305,10 @@ class ObservabilityRegistry:
             if name in SENSITIVE_LOG_FIELDS:
                 clean[key] = "[REDACTED]"
             elif isinstance(value, dict):
-                clean[key] = {k: "[REDACTED]" if str(k).lower() in SENSITIVE_LOG_FIELDS else v for k, v in value.items()}
+                clean[key] = {
+                    k: "[REDACTED]" if str(k).lower() in SENSITIVE_LOG_FIELDS else v
+                    for k, v in value.items()
+                }
             else:
                 clean[key] = value
         return clean

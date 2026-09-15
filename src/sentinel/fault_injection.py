@@ -111,7 +111,9 @@ class FaultInjectionHarness:
                 "state_preserved": True,
             }
         return {
-            "duplicate_financial_effect": all(not scenario.duplicate_financial_effect for scenario in self._scenarios),
+            "duplicate_financial_effect": all(
+                not scenario.duplicate_financial_effect for scenario in self._scenarios
+            ),
             "safe_timeout": all(scenario.safe_timeout for scenario in self._scenarios),
             "safe_recovery": all(scenario.safe_recovery for scenario in self._scenarios),
             "unknown_handling": all(scenario.unknown_handling for scenario in self._scenarios),
