@@ -602,6 +602,7 @@ def create_api(
                 .nav { background: white; border-radius: 16px; padding: 18px; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
                 .nav a { display: block; padding: 10px 12px; border-radius: 10px; color: #1f2937; text-decoration: none; margin-bottom: 8px; }
                 .nav a:hover { background: #eff6ff; }
+                .nav a.active { background: #dbeafe; color: #1d4ed8; font-weight: 700; }
                 .main { display: grid; gap: 20px; }
                 .card { background: white; border-radius: 16px; padding: 20px; box-shadow: 0 8px 24px rgba(15,23,42,0.08); }
                 .metrics { display: grid; grid-template-columns: repeat(4, minmax(0,1fr)); gap: 16px; }
@@ -625,39 +626,57 @@ def create_api(
                 <div class="grid">
                     <aside class="nav">
                         <strong>Navigation</strong>
-                        <a href="#">Dashboard</a>
-                        <a href="#">Transactions</a>
-                        <a href="#">Reconciliation</a>
-                        <a href="#">CBS Integration</a>
-                        <a href="#">Risk & Integrity</a>
-                        <a href="#">Audit</a>
-                        <a href="#">System Health</a>
+                        <a href="#dashboard-view" data-view="dashboard">Dashboard</a>
+                        <a href="#transaction-view" data-view="transactions">Transactions</a>
+                        <a href="#reconciliation-view" data-view="reconciliation">Reconciliation</a>
+                        <a href="#cbs-view" data-view="cbs">CBS Integration</a>
+                        <a href="#risk-view" data-view="risk">Risk &amp; Integrity</a>
+                        <a href="#audit-view" data-view="audit">Audit</a>
+                        <a href="#health-view" data-view="health">System Health</a>
                     </aside>
                     <main class="main">
                         <div class="notice">This console shows synthetic or unavailable values only. It does not claim live bank telemetry.</div>
-                        <section class="metrics">
+                        <section id="dashboard-view" class="metrics">
                             <div class="metric"><div>Environment</div><strong class="value" id="environment-value">Unavailable</strong></div>
                             <div class="metric"><div>CBS Provider</div><strong class="value" id="provider-value">Unavailable</strong></div>
                             <div class="metric"><div>Unknown Txns</div><strong class="value" id="unknown-value">Unavailable</strong></div>
                             <div class="metric"><div>Reconciliation</div><strong class="value" id="reconciliation-value">Unavailable</strong></div>
                         </section>
-                        <div class="card">
+                        <div id="transaction-view" class="card">
                             <h3>Transaction Submission</h3>
-                            <form>
-                                <input value="acct-source-001" placeholder="Source account" />
-                                <input value="acct-dest-001" placeholder="Destination account" />
-                                <input value="1250.00" placeholder="Amount" />
-                                <select><option>ETB</option><option>USD</option></select>
-                                <input value="TRANSFER" placeholder="Transaction type" />
-                                <input value="idem-001" placeholder="Idempotency key" />
-                                <input value="corr-001" placeholder="Correlation ID" />
-                                <input value="trace-001" placeholder="Trace ID" />
-                                <button type="button">Submit transaction</button>
+                            <form id="banking-transaction-form">
+                                <input name="transaction_id" value="bank-txn-001" placeholder="Transaction ID" required />
+                                <input name="source_account" value="acct-source-001" placeholder="Source account" required />
+                                <input name="destination_account" value="acct-dest-001" placeholder="Destination account" required />
+                                <input name="amount" value="1250.00" placeholder="Amount" required />
+                                <select name="currency"><option>ETB</option><option>USD</option></select>
+                                <input name="transaction_type" value="TRANSFER" placeholder="Transaction type" required />
+                                <input name="idempotency_key" value="bank-idem-001" placeholder="Idempotency key" required />
+                                <input name="correlation_id" value="bank-corr-001" placeholder="Correlation ID" />
+                                <input name="trace_id" value="bank-trace-001" placeholder="Trace ID" />
+                                <button type="submit">Submit simulation transaction</button>
                             </form>
+                            <pre id="transaction-result">No transaction submitted yet.</pre>
                         </div>
-                        <div class="card">
+                        <div id="cbs-view" class="card">
                             <h3>CBS Integration Status</h3>
                             <pre id="cbs-status">{"provider":"unavailable","status":"not-configured","environment":"unavailable"}</pre>
+                        </div>
+                        <div id="reconciliation-view" class="card">
+                            <h3>Reconciliation</h3>
+                            <p id="reconciliation-message">No synthetic reconciliation review is currently selected.</p>
+                        </div>
+                        <div id="risk-view" class="card">
+                            <h3>Risk &amp; Integrity</h3>
+                            <p>Risk and integrity decisions are available through the transaction response.</p>
+                        </div>
+                        <div id="audit-view" class="card">
+                            <h3>Audit</h3>
+                            <p>Audit details are unavailable until a synthetic transaction is submitted.</p>
+                        </div>
+                        <div id="health-view" class="card">
+                            <h3>System Health</h3>
+                            <p>Health status is shown in the CBS Integration Status panel.</p>
                         </div>
                     </main>
                 </div>
@@ -686,6 +705,56 @@ def create_api(
                         document.getElementById('cbs-status').textContent = '{"provider":"unavailable","status":"not-configured","environment":"unavailable"}';
                     }
                 }
+
+                const viewLinks = document.querySelectorAll('.nav a[data-view]');
+                viewLinks.forEach(function (link) {
+                    link.addEventListener('click', function (event) {
+                        event.preventDefault();
+                        viewLinks.forEach(function (item) { item.classList.remove('active'); });
+                        link.classList.add('active');
+                        const target = document.getElementById(link.getAttribute('href').slice(1));
+                        if (target) {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                        }
+                    });
+                });
+                document.querySelector('.nav a[data-view="dashboard"]').classList.add('active');
+
+                document.getElementById('banking-transaction-form').addEventListener('submit', async function (event) {
+                    event.preventDefault();
+                    const form = new FormData(event.currentTarget);
+                    const idempotencyKey = form.get('idempotency_key');
+                    const result = document.getElementById('transaction-result');
+                    const body = {
+                        transaction_id: form.get('transaction_id'),
+                        source_account: form.get('source_account'),
+                        destination_account: form.get('destination_account'),
+                        amount: form.get('amount'),
+                        currency: form.get('currency'),
+                        transaction_type: form.get('transaction_type'),
+                        scenario: 'normal_transaction'
+                    };
+                    result.textContent = 'Submitting synthetic transaction...';
+                    try {
+                        const response = await fetch('/api/v1/simulator/transactions', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': 'Bearer banking-ui',
+                                'Idempotency-Key': idempotencyKey,
+                                'X-Correlation-ID': form.get('correlation_id'),
+                                'X-Trace-ID': form.get('trace_id')
+                            },
+                            body: JSON.stringify(body)
+                        });
+                        const payload = await response.json();
+                        result.textContent = JSON.stringify(payload, null, 2);
+                    } catch (error) {
+                        result.textContent = JSON.stringify({
+                            error: 'The synthetic transaction request could not be completed.'
+                        }, null, 2);
+                    }
+                });
                 loadCbsStatus();
             </script>
         </body>

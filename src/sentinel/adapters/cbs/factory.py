@@ -48,10 +48,8 @@ def create_cbs_adapter(
             "real bank connectivity requires an explicitly implemented and approved adapter"
         )
     factory = _ALLOWED_PROVIDERS[normalized]
-    if normalized == "simulation":
-        return factory(environment=environment or "simulation")
-    if normalized == "placeholder":
-        return factory(environment=environment or "development")
+    if normalized in {"simulation", "placeholder"}:
+        return factory()
     return factory()
 
 
