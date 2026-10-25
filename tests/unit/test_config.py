@@ -4,6 +4,7 @@ from sentinel.config import Settings
 def test_settings_use_safe_defaults(monkeypatch):
     monkeypatch.delenv("SENTINEL_ENVIRONMENT", raising=False)
     monkeypatch.delenv("SENTINEL_LOG_LEVEL", raising=False)
+    monkeypatch.delenv("SENTINEL_CBS_PROVIDER", raising=False)
     monkeypatch.delenv("SENTINEL_DATABASE_URL", raising=False)
     monkeypatch.delenv("SENTINEL_DB_POOL_SIZE", raising=False)
     monkeypatch.delenv("SENTINEL_DB_MAX_OVERFLOW", raising=False)
@@ -14,6 +15,7 @@ def test_settings_use_safe_defaults(monkeypatch):
 def test_settings_read_environment(monkeypatch):
     monkeypatch.setenv("SENTINEL_ENVIRONMENT", "test")
     monkeypatch.setenv("SENTINEL_LOG_LEVEL", "debug")
+    monkeypatch.delenv("SENTINEL_CBS_PROVIDER", raising=False)
     monkeypatch.delenv("SENTINEL_DATABASE_URL", raising=False)
     monkeypatch.delenv("SENTINEL_DB_POOL_SIZE", raising=False)
     monkeypatch.delenv("SENTINEL_DB_MAX_OVERFLOW", raising=False)
