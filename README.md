@@ -1,6 +1,10 @@
 # SENTINEL
 
-SENTINEL is a transaction-integrity and anomaly-control plane designed to operate around an existing Core Banking System (CBS). The CBS remains the authoritative financial source of truth; SENTINEL does not implement a competing ledger.
+## Project purpose
+
+SENTINEL is a Core Banking Transaction Integrity & Anomaly Sentinel. It is a transaction-control and anomaly-control plane designed to operate around an existing Core Banking System (CBS). Its purpose is to protect distributed financial workflows from duplicate requests, replay, timeout uncertainty, partial posting, inconsistent balances, reconciliation exceptions, and system-wide anomalies.
+
+The CBS remains the authoritative financial source of truth. SENTINEL does not implement or represent a competing financial ledger.
 
 ## Safe operating model
 
@@ -24,7 +28,17 @@ This repository includes:
 - a FastAPI simulation console and banking operations UI
 - orchestration logic that preserves UNKNOWN, reconciliation, and duplicate protection semantics
 
-The simulator and placeholder adapter are explicitly non-authoritative and clearly labeled as synthetic.
+The simulator and placeholder adapter are explicitly non-authoritative and clearly labeled as synthetic. This repository is therefore suitable for local development, demonstration, contract testing, and fault simulation. It is not a live bank connection or a deployed production payment service.
+
+## Screenshots
+
+Run the local console and open the links below to capture project screenshots for demonstrations or reports:
+
+- `http://127.0.0.1:8000/simulation-ui` - simulation console and scenario testing
+- `http://127.0.0.1:8000/banking-ui` - synthetic banking operations interface
+- `http://127.0.0.1:8000/docs` - generated API documentation
+
+Do not present screenshots from these synthetic interfaces as evidence of a live bank, real customer data, or a production CBS connection.
 
 ## Running the local simulation console
 
@@ -120,10 +134,32 @@ Bank integration documentation is in `docs/integration/`.
 
 ## Validation
 
-The current regression suite passes in the repository:
+The PostgreSQL integration tests require a reachable local test database. Configure a database URL before running the complete suite:
 
 ```powershell
+$env:SENTINEL_DATABASE_URL = "postgresql+asyncpg://sentinel_user:<password>@127.0.0.1:5432/sentinel"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
-This repository is intended to remain on the frozen v1.0.0 release boundary while the production-style placeholder and adapter architecture evolve in a separate feature branch.
+Other validation commands:
+
+```powershell
+.\.venv\Scripts\python.exe -m ruff check .
+.\.venv\Scripts\python.exe -m mypy src
+.\.venv\Scripts\python.exe -m compileall -q src tests
+git diff --check
+```
+
+Current repository validation: **203 tests passed**. Individual timing values vary by machine and database configuration.
+
+## Limitations
+
+- The simulator and placeholder CBS implementations are non-authoritative.
+- No real bank, CBS vendor, payment switch, or settlement system is connected.
+- The UI uses synthetic accounts and scenarios.
+- Production performance and latency have not been established through a bank-grade benchmark.
+- Kafka, Redis, and PostgreSQL integrations are represented by contracts or local integration tests; no live bank deployment is claimed.
+- External IAM, approved mTLS certificates, secrets/KMS, and bank-specific adapters are required before real deployment.
+- Security and performance claims require institution-specific testing before production acceptance.
+
+This repository is intended to remain distinct from the frozen v1.0.0 release boundary while production-style placeholder and adapter architecture evolves on the feature branch.
