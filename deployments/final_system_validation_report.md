@@ -2,9 +2,9 @@
 
 ## Scope
 
-This report is the definitive repository evidence for the question: "How do we know SENTINEL v1.0.0 works?"
+This report documents the repository evidence for the SENTINEL v1.0.0 release and the subsequent `feature/simulation-ui` development branch. The frozen `v1.0.0` tag remains a historical release reference; additional commits on the feature branch extend the simulated development surface.
 
-The evidence in this report is intentionally derived from the actual shipped repository code and tests, not from invented deployment infrastructure. The repository is a deterministic Python package, a FastAPI contract surface, and an evidence-backed control-plane model around an authoritative CBS. It is not a production deployment with a browser UI or a live bank ledger.
+The evidence in this report is derived from the repository code and tests, not from invented deployment infrastructure. The repository is a deterministic Python package, a FastAPI contract surface, and an evidence-backed control-plane model around an authoritative CBS. It is not a production bank deployment or live-ledger integration. The current feature branch includes simulation and banking UI surfaces implemented only against synthetic adapters.
 
 ## Exact startup command
 
@@ -59,19 +59,20 @@ Verified output:
 ['/api/v1/health', '/api/v1/transactions', '/api/v1/transactions/{transaction_id}/status']
 ```
 
-## 197-test result
+## 203-test result
 
-Fresh full regression proof command:
+Fresh full regression proof command on the `feature/simulation-ui` branch:
 
-```sh
+```powershell
 cd d:\Projects\cbs_sentinel\SENTINEL
+$env:SENTINEL_DATABASE_URL = "postgresql+asyncpg://sentinel_user:<password>@127.0.0.1:5432/sentinel"
 .\.venv\Scripts\python.exe -m pytest -q
 ```
 
 Fresh output:
 
 ```text
-197 passed in 8.62s
+203 passed in 9.82s
 ```
 
 ## Successful transaction proof
@@ -159,22 +160,21 @@ The repository’s documented gate and architecture posture is explicit:
 
 Therefore, the valid production integration story for this repository is evidence-backed orchestration, not an actual bank transaction posting service.
 
-## Release commit/tag
+## Release commit/tag and current branch state
 
-The committed production release repository metadata is:
-
-```sh
-cd d:\Projects\cbs_sentinel\SENTINEL
-git rev-parse HEAD
-git tag --points-at HEAD
-git status --short
-```
-
-Fresh output:
+The frozen production release metadata remains:
 
 ```text
-72dd7e5a0f0ae5bb26b8d93070f5d3e332bbc832
-v1.0.0
+Commit: 72dd7e5a0f0ae5bb26b8d93070f5d3e332bbc832
+Tag:    v1.0.0
 ```
 
-The repository is clean after the commit and tag. No new functionality was introduced beyond the approved release-candidate gate boundaries.
+The subsequent development branch is currently:
+
+```text
+Branch: feature/simulation-ui
+HEAD:   d23ae35d8a0c4a8a0d1941a1d589139c0002e1f6
+Version description: v1.0.0-9-gd23ae35
+```
+
+The worktree is clean. The current branch contains approved simulation UI and integration-boundary development after the frozen `v1.0.0` release; this report therefore distinguishes the historical release evidence from the current feature branch evidence.
