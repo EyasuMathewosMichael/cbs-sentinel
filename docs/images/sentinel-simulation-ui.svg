@@ -1,0 +1,78 @@
+<svg width="1400" height="900" viewBox="0 0 1400 900" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">SENTINEL Simulation UI</title>
+  <desc id="desc">Dark simulation console showing the SENTINEL CBS simulation interface and non-authoritative system status.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#071a2c"/>
+      <stop offset="100%" stop-color="#0e1f35"/>
+    </linearGradient>
+    <linearGradient id="pill" x1="0" x2="1">
+      <stop offset="0%" stop-color="#0c6ee7"/>
+      <stop offset="100%" stop-color="#1b86ff"/>
+    </linearGradient>
+    <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="10" stdDeviation="12" flood-color="#000000" flood-opacity="0.18"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="900" fill="url(#bg)"/>
+
+  <rect x="95" y="70" width="1210" height="74" rx="18" fill="url(#pill)" filter="url(#shadow)"/>
+  <text x="700" y="118" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="32" font-weight="700" fill="#eaf5ff" letter-spacing="1.8">SIMULATION ENVIRONMENT</text>
+
+  <text x="90" y="220" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="700" fill="#edf4ff">SENTINEL CBS Simulation</text>
+  <text x="90" y="300" font-family="Segoe UI, Arial, sans-serif" font-size="76" font-weight="700" fill="#edf4ff">Console</text>
+
+  <g transform="translate(944, 200)">
+    <rect x="0" y="0" width="270" height="90" rx="18" fill="#1a8c5d" filter="url(#shadow)"/>
+    <text x="135" y="57" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#e9fff0">NO REAL BANK</text>
+    <text x="135" y="88" text-anchor="middle" font-family="Segoe UI, Arial, sans-serif" font-size="28" font-weight="700" fill="#e9fff0">LEDGER</text>
+  </g>
+
+  <g transform="translate(90, 360)">
+    <rect x="0" y="0" width="720" height="420" rx="22" fill="#0d1d32" stroke="#4c5d7a" stroke-width="2"/>
+    <text x="38" y="60" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700" fill="#edf4ff">Transaction Simulator</text>
+
+    <g transform="translate(38, 92)">
+      <rect x="0" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="22" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Transaction ID</text>
+      <text x="22" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">sim-txn-001</text>
+
+      <rect x="330" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="352" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Idempotency Key</text>
+      <text x="352" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">sim-idem-001</text>
+    </g>
+
+    <g transform="translate(38, 202)">
+      <rect x="0" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="22" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Source Account</text>
+      <text x="22" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">source</text>
+
+      <rect x="330" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="352" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Destination Account</text>
+      <text x="352" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">destination</text>
+    </g>
+
+    <g transform="translate(38, 312)">
+      <rect x="0" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="22" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Amount</text>
+      <text x="22" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">10.00</text>
+
+      <rect x="330" y="0" width="300" height="90" rx="10" fill="#1a2942" stroke="#53657e"/>
+      <text x="352" y="34" font-family="Segoe UI, Arial, sans-serif" font-size="24" fill="#dfeaf9">Currency</text>
+      <text x="352" y="68" font-family="Segoe UI, Arial, sans-serif" font-size="28" fill="#f2f6ff">ETB</text>
+    </g>
+  </g>
+
+  <g transform="translate(860, 360)">
+    <rect x="0" y="0" width="440" height="420" rx="22" fill="#0d1d32" stroke="#4c5d7a" stroke-width="2"/>
+    <text x="38" y="60" font-family="Segoe UI, Arial, sans-serif" font-size="42" font-weight="700" fill="#edf4ff">System Status</text>
+
+    <rect x="38" y="92" width="360" height="240" rx="12" fill="#0a1320" stroke="#46586f"/>
+    <text x="60" y="140" font-family="Consolas, monospace" font-size="24" fill="#eaf5ff">{</text>
+    <text x="60" y="176" font-family="Consolas, monospace" font-size="24" fill="#eaf5ff">  "status": "simulation-ready",</text>
+    <text x="60" y="212" font-family="Consolas, monospace" font-size="24" fill="#eaf5ff">  "mode": "simulation",</text>
+    <text x="60" y="248" font-family="Consolas, monospace" font-size="24" fill="#eaf5ff">  "warning": "SIMULATION MODE ONLY"</text>
+    <text x="60" y="284" font-family="Consolas, monospace" font-size="24" fill="#eaf5ff">}</text>
+  </g>
+</svg>

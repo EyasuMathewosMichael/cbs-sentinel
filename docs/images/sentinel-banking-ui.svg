@@ -1,0 +1,57 @@
+<svg width="1400" height="860" viewBox="0 0 1400 860" xmlns="http://www.w3.org/2000/svg" role="img" aria-labelledby="title desc">
+  <title id="title">SENTINEL Banking Operations Console</title>
+  <desc id="desc">Synthetic banking operations console showing environment and system status with simulation-only labels.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0%" stop-color="#edf3f9"/>
+      <stop offset="100%" stop-color="#e7edf6"/>
+    </linearGradient>
+    <linearGradient id="header" x1="0" x2="1">
+      <stop offset="0%" stop-color="#0d1c40"/>
+      <stop offset="100%" stop-color="#1f60b4"/>
+    </linearGradient>
+    <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="12" stdDeviation="12" flood-color="#1d2d4d" flood-opacity="0.15"/>
+    </filter>
+  </defs>
+
+  <rect width="1400" height="860" fill="url(#bg)"/>
+
+  <g filter="url(#shadow)">
+    <rect x="100" y="52" width="1200" height="185" rx="34" fill="url(#header)"/>
+    <rect x="150" y="88" width="500" height="65" rx="20" fill="#dfeaf9" opacity="0.18"/>
+    <text x="190" y="131" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#edf5ff">SIMULATION</text>
+    <text x="855" y="131" font-family="Segoe UI, Arial, sans-serif" font-size="34" font-weight="700" fill="#edf5ff">DEVELOPMENT</text>
+    <circle cx="1110" cy="120" r="55" fill="#dfeaf9" opacity="0.18"/>
+    <text x="150" y="218" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="800" fill="#eff6ff">SENTINEL Banking Operations</text>
+    <text x="150" y="286" font-family="Segoe UI, Arial, sans-serif" font-size="66" font-weight="800" fill="#eff6ff">Console</text>
+  </g>
+
+  <g>
+    <rect x="100" y="340" width="520" height="410" rx="24" fill="#f5f8fb" stroke="#d4dae6" stroke-width="2"/>
+    <text x="138" y="390" font-family="Segoe UI, Arial, sans-serif" font-size="46" font-weight="700" fill="#1e2f49">Navigation</text>
+
+    <rect x="138" y="420" width="440" height="80" rx="14" fill="#cfe2f8"/>
+    <text x="170" y="475" font-family="Segoe UI, Arial, sans-serif" font-size="36" font-weight="700" fill="#153a69">Dashboard</text>
+
+    <text x="170" y="590" font-family="Segoe UI, Arial, sans-serif" font-size="36" fill="#1d2f4a">Transactions</text>
+    <text x="170" y="660" font-family="Segoe UI, Arial, sans-serif" font-size="36" fill="#1d2f4a">Reconciliation</text>
+  </g>
+
+  <g>
+    <rect x="680" y="340" width="620" height="410" rx="24" fill="#f5f8fb" stroke="#d4dae6" stroke-width="2"/>
+    <rect x="720" y="400" width="470" height="110" rx="20" fill="#f0d88a" opacity="0.7"/>
+    <text x="760" y="470" font-family="Segoe UI, Arial, sans-serif" font-size="34" fill="#2d2a1d">This console shows synthetic or unavailable values only. It does not claim live bank telemetry.</text>
+
+    <g>
+      <rect x="720" y="540" width="190" height="150" rx="18" fill="#edf3fa" stroke="#d9dfeb"/>
+      <text x="740" y="595" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="#5d6e84">Environment</text>
+      <text x="740" y="650" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#1a2d4c">DEVELOPMENT</text>
+
+      <rect x="930" y="540" width="190" height="150" rx="18" fill="#edf3fa" stroke="#d9dfeb"/>
+      <text x="950" y="595" font-family="Segoe UI, Arial, sans-serif" font-size="26" fill="#5d6e84">CBS</text>
+      <text x="950" y="650" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#1a2d4c">Provider</text>
+      <text x="950" y="690" font-family="Segoe UI, Arial, sans-serif" font-size="30" font-weight="700" fill="#1a2d4c">SIMULATION</text>
+    </g>
+  </g>
+</svg>

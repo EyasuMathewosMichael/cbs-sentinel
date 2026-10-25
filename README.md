@@ -32,13 +32,11 @@ The simulator and placeholder adapter are explicitly non-authoritative and clear
 
 ## Screenshots
 
-Run the local console and open the links below to capture project screenshots for demonstrations or reports:
+<img src="docs/images/sentinel-simulation-ui.svg" alt="SENTINEL simulation interface" width="100%" />
 
-- `http://127.0.0.1:8000/simulation-ui` - simulation console and scenario testing
-- `http://127.0.0.1:8000/banking-ui` - synthetic banking operations interface
-- `http://127.0.0.1:8000/docs` - generated API documentation
+<img src="docs/images/sentinel-banking-ui.svg" alt="SENTINEL banking operations interface" width="100%" />
 
-Do not present screenshots from these synthetic interfaces as evidence of a live bank, real customer data, or a production CBS connection.
+This synthetic UI is for local simulation, scenario validation, and demonstration only. It does not represent a live bank, real customer data, or a production CBS connection.
 
 ## Running the local simulation console
 
