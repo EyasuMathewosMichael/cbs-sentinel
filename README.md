@@ -49,6 +49,7 @@ Then open:
 
 - http://127.0.0.1:8000/
 - http://127.0.0.1:8000/simulation-ui
+- http://127.0.0.1:8000/banking-ui
 
 The health endpoint is:
 
