@@ -32,11 +32,23 @@ The simulator and placeholder adapter are explicitly non-authoritative and clear
 
 ## Screenshots
 
-<img src="docs/images/sentinel-simulation-ui.svg" alt="SENTINEL simulation interface" width="100%" />
+<img src="docs/images/sentinel-simulation-ui.png" alt="SENTINEL simulation interface" width="100%" />
 
-<img src="docs/images/sentinel-banking-ui.svg" alt="SENTINEL banking operations interface" width="100%" />
+<img src="docs/images/sentinel-banking-ui.png" alt="SENTINEL banking operations interface" width="100%" />
 
 This synthetic UI is for local simulation, scenario validation, and demonstration only. It does not represent a live bank, real customer data, or a production CBS connection.
+
+## Public Render demo
+
+The `feature/simulation-ui` branch is deployed on Render as a public simulation demo. No real CBS, bank ledger, customer data, or production credentials are connected.
+
+- Simulation Console: https://cbs-sentinel-simulation.onrender.com/simulation-ui
+
+- Banking Operations Console (simulation only; not connected to a real bank or live CBS): https://cbs-sentinel-simulation.onrender.com/banking-ui
+
+- Simulation health: https://cbs-sentinel-simulation.onrender.com/api/v1/simulator/health
+
+The public demo uses synthetic, in-memory state and permissive demo authentication. Do not submit real or sensitive information. State may be lost when the service restarts. Automatic deploys are disabled; deploy updates manually from the Render Blueprint in `render.yaml`.
 
 ## Running the local simulation console
 
