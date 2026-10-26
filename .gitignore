@@ -9,5 +9,6 @@ htmlcov/
 .venv/
 venv/
 .env
+docs/report/
 dist/
 build/
