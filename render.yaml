@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: cbs-sentinel-simulation
+    runtime: python
+    plan: free
+    region: oregon
+    branch: feature/simulation-ui
+    autoDeployTrigger: "off"
+    buildCommand: pip install .
+    startCommand: uvicorn sentinel.application.simulation_server:app --app-dir src --host 0.0.0.0 --port $PORT
+    healthCheckPath: /api/v1/simulator/health
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.12.10
+      - key: SENTINEL_ENVIRONMENT
+        value: development
+      - key: SENTINEL_CBS_PROVIDER
+        value: simulation
+      - key: SENTINEL_LOG_LEVEL
+        value: INFO
